@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{current_locale}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{site_title}</title>
+    <link rel="stylesheet" href="{assets_url}/vendor/bootstrap/css/bootstrap.min.css">
+    <style>
+        :root {
+            --bg: #f4efe7;
+            --text: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, #fff6e8 0, transparent 32%),
+                linear-gradient(180deg, #efe6d8 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 48px 20px 80px;
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">{content}</main>
+    <script src="{assets_url}/vendor/jquery/jquery.min.js"></script>
+    <script src="{assets_url}/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

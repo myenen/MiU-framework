@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers\Api;
+
+use App\Services\Api\{{class_name}}Service;
+use Core\ApiController;
+use Core\Http\Request;
+use Core\Http\Response;
+use Core\View\View;
+
+/**
+ * {{class_name}} API endpointlerini yonetir.
+ */
+final class {{class_name}} extends ApiController
+{
+    /**
+     * @param View $view Controller bagimlilik tutarliligi icin eklenen view.
+     * @param {{class_name}}Service $service API servis katmani.
+     */
+    public function __construct(
+        View $view,
+        private readonly {{class_name}}Service $service
+    ) {
+        parent::__construct($view);
+    }
+
+    /**
+     * Kaynak listesini dondurur.
+     *
+     * @param Request $request Mevcut HTTP istegi.
+     * @return Response
+     */
+    public function index(Request $request): Response
+    {
+        return $this->jsonResult($this->service->index($request->all()));
+    }
+}

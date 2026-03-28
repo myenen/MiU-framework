@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Api;
+
+use Core\Services\BaseApiService;
+use Core\Services\ServiceResult;
+
+/**
+ * {{class_name}} API is mantigini yonetir.
+ */
+final class {{class_name}}Service extends BaseApiService
+{
+    /**
+     * Liste sonucunu dondurur.
+     *
+     * @param array<string, mixed> $payload Istek verisi.
+     * @return ServiceResult
+     */
+    public function index(array $payload = []): ServiceResult
+    {
+        return $this->success('{{class_name}} API sonucu hazir.', [
+            'items' => [],
+            'input' => $payload,
+        ]);
+    }
+}

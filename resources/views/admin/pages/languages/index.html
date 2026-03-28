@@ -1,0 +1,35 @@
+<section style="background: rgba(17, 24, 39, 0.88); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 22px; padding: 28px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);">
+    <div>
+        <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Dil yonetimi}}</div>
+        <h1 style="margin:8px 0 0; font-size:36px;">{{Ceviriler}}</h1>
+    </div>
+
+    <div style="margin-top:18px;">{alert_html}</div>
+
+    <form method="get" action="/admin/languages" style="margin-top:18px; display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:end;">
+        <label style="display:grid; gap:8px;">
+            <span>{{Arama}}</span>
+            <input type="text" name="q" value="{filter_query}" placeholder="Anahtar veya ceviri..." style="padding:12px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc;">
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; padding-bottom:10px;">
+            <input type="checkbox" name="missing" value="1" {filter_missing_checked}>
+            <span>{{Sadece eksikler}}</span>
+        </label>
+        <button type="submit" style="padding:12px 18px; border-radius:12px; border:none; background:#2563eb; color:#f8fafc; cursor:pointer;">{{Filtrele}}</button>
+    </form>
+
+    <div style="margin-top:22px; overflow:auto; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px;">
+        <table style="width:100%; border-collapse:collapse; min-width:860px; background:#0f172a;">
+            <thead>
+                <tr style="background:#111827; color:#94a3b8; text-align:left;">
+                    <th style="padding:14px;">{{Anahtar}}</th>
+                    <th style="padding:14px;">{{Onizleme}}</th>
+                    <th style="padding:14px;">{{Durum}}</th>
+                    <th style="padding:14px;">{{Dil sayisi}}</th>
+                    <th style="padding:14px;">{{Islem}}</th>
+                </tr>
+            </thead>
+            <tbody>{translation_rows_html}</tbody>
+        </table>
+    </div>
+</section>

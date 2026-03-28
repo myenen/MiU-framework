@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="{current_locale}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{admin_panel_title}</title>
+    <link rel="stylesheet" href="{assets_url}/vendor/bootstrap/css/bootstrap.min.css">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --text: #e5eefc;
+            --line: rgba(148, 163, 184, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 24%),
+                linear-gradient(180deg, #020617 0%, var(--bg) 100%);
+        }
+
+        .admin-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+        }
+
+        .sidebar {
+            padding: 28px 20px;
+            border-right: 1px solid var(--line);
+            background: rgba(2, 6, 23, 0.65);
+        }
+
+        .content {
+            padding: 36px 28px 48px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="sidebar">
+            <div style="font-size:22px; font-weight:700; margin-bottom:28px;">{admin_panel_title}</div>
+            {?can:dashboard.view}
+            <a href="/admin" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; border:1px solid rgba(34,197,94,.45); background:rgba(31,41,55,.45);">{admin_menu_dashboard}</a>
+            {/can:dashboard.view}
+            {?can:roles.view}
+            <a href="/admin/roles" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{Roller}}</a>
+            {/can:roles.view}
+            {?can:users.view}
+            <a href="/admin/users" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{Kullanicilar}}</a>
+            {/can:users.view}
+            {?can:logs.view}
+            <a href="/admin/logs" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{Loglar}}</a>
+            {/can:logs.view}
+            {?can:translations.view}
+            <a href="/admin/languages" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{Diller}}</a>
+            {/can:translations.view}
+            {?can:uploads.view}
+            <a href="/admin/uploads" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{Uploadlar}}</a>
+            {/can:uploads.view}
+            {?can:docs.view}
+            <a href="/admin/docs/api" style="display:block; color:#e5eefc; text-decoration:none; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:rgba(31,41,55,.45);">{{API Dokumani}}</a>
+            {/can:docs.view}
+            <a href="/" style="display:block; color:#94a3b8; text-decoration:none; padding:12px 14px; border-radius:12px; background:rgba(31,41,55,.45);">{admin_menu_return_site}</a>
+        </aside>
+        <main class="content">{content}</main>
+    </div>
+    <script src="{assets_url}/vendor/jquery/jquery.min.js"></script>
+    <script src="{assets_url}/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

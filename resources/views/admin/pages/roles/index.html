@@ -1,0 +1,25 @@
+<section style="background: rgba(17, 24, 39, 0.88); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 22px; padding: 28px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div>
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Rol yonetimi}}</div>
+            <h1 style="margin:8px 0 0; font-size:36px;">{{Roller ve yetkiler}}</h1>
+        </div>
+    </div>
+
+    <div style="margin-top:18px;">{alert_html}</div>
+
+    <div style="margin-top:22px; overflow:auto; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px;">
+        <table style="width:100%; border-collapse:collapse; min-width:760px; background:#0f172a;">
+            <thead>
+                <tr style="background:#111827; color:#94a3b8; text-align:left;">
+                    <th style="padding:14px;">ID</th>
+                    <th style="padding:14px;">{{Rol}}</th>
+                    <th style="padding:14px;">{{Yetkiler}}</th>
+                    <th style="padding:14px;">{{Yetki sayisi}}</th>
+                    <th style="padding:14px;">{{Islem}}</th>
+                </tr>
+            </thead>
+            <tbody>{roles_rows_html}</tbody>
+        </table>
+    </div>
+</section>

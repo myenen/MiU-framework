@@ -1,0 +1,57 @@
+<section style="background: rgba(17, 24, 39, 0.88); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 22px; padding: 28px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div>
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Kullanici yonetimi}}</div>
+            <h1 style="margin:8px 0 0; font-size:36px;">{{Kullanicilar}}</h1>
+        </div>
+        {?can:users.edit}
+        <a href="/admin/users/create" style="display:inline-block; padding:11px 16px; border-radius:12px; background:#16a34a; color:#f8fafc; text-decoration:none;">{{Yeni kullanici}}</a>
+        {/can:users.edit}
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-top:22px;">
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Toplam kullanici}}</div>
+            <div style="font-size:34px; margin-top:10px; font-weight:700;">{summary_total_users}</div>
+        </div>
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Aktif kullanici}}</div>
+            <div style="font-size:34px; margin-top:10px; font-weight:700;">{summary_active_users}</div>
+        </div>
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Son kayit}}</div>
+            <div style="font-size:20px; margin-top:10px; font-weight:700;">{summary_latest_user}</div>
+        </div>
+    </div>
+
+    <div style="margin-top:18px;">{alert_html}</div>
+
+    <form method="get" action="/admin/users" style="margin-top:18px; display:grid; grid-template-columns:2fr 1fr auto; gap:12px; align-items:end;">
+        <label style="display:grid; gap:8px;">
+            <span>{{Arama}}</span>
+            <input type="text" name="q" value="{filter_query}" placeholder="Ad, e-posta, sehir..." style="padding:12px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc;">
+        </label>
+        <label style="display:grid; gap:8px;">
+            <span>{{Durum filtresi}}</span>
+            <select name="status" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc;">{filter_status_options_html}</select>
+        </label>
+        <button type="submit" style="padding:12px 18px; border-radius:12px; border:none; background:#2563eb; color:#f8fafc; cursor:pointer;">{{Filtrele}}</button>
+    </form>
+
+    <div style="margin-top:22px; overflow:auto; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px;">
+        <table style="width:100%; border-collapse:collapse; min-width:760px; background:#0f172a;">
+            <thead>
+                <tr style="background:#111827; color:#94a3b8; text-align:left;">
+                    <th style="padding:14px;">ID</th>
+                    <th style="padding:14px;">{{Ad soyad}}</th>
+                    <th style="padding:14px;">{{E-posta}}</th>
+                    <th style="padding:14px;">{{Rol}}</th>
+                    <th style="padding:14px;">{{Durum}}</th>
+                    <th style="padding:14px;">{{Sehir}}</th>
+                    <th style="padding:14px;">{{Islem}}</th>
+                </tr>
+            </thead>
+            <tbody>{users_rows_html}</tbody>
+        </table>
+    </div>
+</section>

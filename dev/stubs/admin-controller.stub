@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers\Admin;
+
+use App\Services\Admin\{{class_name}}PageService;
+use Core\AdminController;
+use Core\Http\Request;
+use Core\Http\Response;
+use Core\View\View;
+
+/**
+ * {{class_name}} admin sayfasini yonetir.
+ */
+final class {{class_name}} extends AdminController
+{
+    /**
+     * @param View $view Admin view goruntuleyicisi.
+     * @param {{class_name}}PageService $page Sayfa servis katmani.
+     */
+    public function __construct(
+        View $view,
+        private readonly {{class_name}}PageService $page
+    ) {
+        parent::__construct($view);
+    }
+
+    /**
+     * Sayfayi goruntuler.
+     *
+     * @param Request $request Mevcut HTTP istegi.
+     * @return Response
+     */
+    public function index(Request $request): Response
+    {
+        return $this->renderPageResult(
+            $this->page->page($request->path()),
+            'pages/{{view_path}}',
+            null,
+            null,
+            '/admin/login'
+        );
+    }
+}

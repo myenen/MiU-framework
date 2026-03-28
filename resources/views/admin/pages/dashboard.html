@@ -1,0 +1,45 @@
+<section style="background: rgba(17, 24, 39, 0.88); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 22px; padding: 28px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);">
+    <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{admin_template_badge}</div>
+    <h1 style="margin:8px 0 14px; font-size:40px;">{dashboard_title}</h1>
+    <p style="margin:0 0 12px; color:#94a3b8;">{admin_welcome} {admin_name}</p>
+    <p style="line-height:1.7; color:#e5eefc;">{admin_intro}</p>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-top:22px;">
+        {?can:users.view}
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{stat_users}</div>
+            <div style="font-size:36px; margin-top:10px; font-weight:700;">{users_count}</div>
+        </div>
+        {/can:users.view}
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{stat_orders}</div>
+            <div style="font-size:36px; margin-top:10px; font-weight:700;">{orders_count}</div>
+        </div>
+        <div style="background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px; padding:20px;">
+            <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{stat_tickets}</div>
+            <div style="font-size:36px; margin-top:10px; font-weight:700;">{tickets_count}</div>
+        </div>
+    </div>
+
+    <div style="margin-top:16px; padding:18px; background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px;">
+        <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{shared_service_title}</div>
+        <div style="margin-top:8px;">{admin_shared_service_description}</div>
+        <div style="margin-top:8px; color:#94a3b8;">{upload_target_label}: <code>{uploads_path}</code></div>
+    </div>
+
+    {?can:users.view}
+    <div style="margin-top:16px; padding:18px; background:#1f2937; border:1px solid rgba(148, 163, 184, 0.18); border-radius:18px;">
+        <div style="color:#94a3b8; font-size:13px; text-transform:uppercase; letter-spacing:.12em;">{{Kullanici ozeti}}</div>
+        <div style="margin-top:8px;">{{Aktif kullanici}}: {active_users_count}</div>
+        <div style="margin-top:8px;">{{Son kayit}}: {latest_user_name}</div>
+    </div>
+    {/can:users.view}
+
+    <div style="margin-top:18px; color:#94a3b8; font-size:14px;">
+        {path_label}: <code>{path}</code> | {page_generated_at_label}: {generated_at}
+    </div>
+    <form method="post" action="/admin/logout" style="margin-top:18px;">
+        <input type="hidden" name="_token" value="{csrf_token}">
+        <button type="submit" style="padding:10px 16px; border-radius:10px; border:1px solid rgba(248,250,252,.18); background:#0f172a; color:#e5eefc; cursor:pointer;">{logout_button}</button>
+    </form>
+</section>

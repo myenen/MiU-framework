@@ -1,0 +1,6 @@
+<section style="display:grid; gap:24px;">
+    <div style="background:rgba(15,23,42,.7); border:1px solid rgba(148,163,184,.18); border-radius:24px; padding:28px;">
+        <h1 style="margin:0 0 12px; color:#f8fafc;">{{{{title}}}}</h1>
+        <p style="margin:0; color:#cbd5e1;">{{{{body}}}}</p>
+    </div>
+</section>

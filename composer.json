@@ -1,0 +1,30 @@
+{
+    "name": "miu/framework",
+    "description": "MiU PHP framework",
+    "require": {
+        "php": "^8.5",
+        "phpmailer/phpmailer": "^7.0"
+    },
+    "authors": [
+        {
+            "name": "Codex",
+            "email": "codex@example.com"
+        }
+    ],
+    "scripts": {
+        "docs:generate": "php dev/bin/generate-docs.php",
+        "docs:framework-html": "php dev/bin/generate-service-reference.php",
+        "docs:services-html": "php dev/bin/generate-service-reference.php",
+        "make": "php dev/bin/make.php",
+        "make:site-page": "php dev/bin/make.php site-page",
+        "make:admin-page": "php dev/bin/make.php admin-page",
+        "make:api-endpoint": "php dev/bin/make.php api-endpoint",
+        "make:service": "php dev/bin/make.php service",
+        "make:request": "php dev/bin/make.php request",
+        "template:import": "php dev/bin/import-template.php",
+        "test": "php dev/bin/test.php",
+        "migrate": "php dev/bin/migrate.php",
+        "migrate:rollback": "php dev/bin/migrate-rollback.php",
+        "make:migration": "php dev/bin/make-migration.php"
+    }
+}

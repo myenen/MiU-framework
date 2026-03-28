@@ -1,0 +1,33 @@
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-uppercase small fw-semibold text-warning mb-2">Dynamic Route</div>
+                    <h1 class="display-6 mb-3">Dinamik class cagrisi calisti</h1>
+                    <p class="lead mb-4">
+                        Bu sayfa static route tanimi olmadan acildi.
+                        {{Dil altyapısı test ediliyor}}
+                    </p>
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <strong>Path:</strong> {path}
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Class:</strong> {class_name}
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Method:</strong> {method_name}
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Ek Segmentler:</strong> {extra_segments}
+                        </div>
+                    </div>
+                    <div class="mt-4 text-muted">
+                        Ornek: <code>/ornek-url</code> -> <code>OrnekUrl::index()</code>, <code>/ornek-url/about-us</code> -> <code>OrnekUrl::aboutUs()</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

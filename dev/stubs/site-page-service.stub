@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Site;
+
+use Core\Services\BasePageService;
+use Core\Services\ServiceResult;
+
+/**
+ * {{class_name}} site sayfasi icin view verisini hazirlar.
+ */
+final class {{class_name}}PageService extends BasePageService
+{
+    /**
+     * Sayfa verisini dondurur.
+     *
+     * @param string $path Mevcut istek yolu.
+     * @return ServiceResult
+     */
+    public function page(string $path): ServiceResult
+    {
+        return $this->success('{{class_name}} sayfasi hazir.', [
+            'path' => $path,
+            'page_title' => '{{title}}',
+        ]);
+    }
+}
