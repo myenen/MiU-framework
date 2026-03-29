@@ -28,7 +28,8 @@ final class Application
         private readonly Request $request,
         private readonly array $routes,
         private readonly array $routerConfig = [],
-        private readonly array $debugConfig = []
+        private readonly array $debugConfig = [],
+        private readonly array $securityConfig = []
     ) {
     }
 
@@ -53,6 +54,8 @@ final class Application
             $response = $this->renderExceptionResponse($throwable);
         }
 
+        $response = $this->applySecurityHeaders($response);
+
         if ($this->container->has(RequestLogger::class)) {
             try {
                 /** @var RequestLogger $logger */
@@ -63,7 +66,6 @@ final class Application
         }
 
         $response->send();
-
     }
 
     /**
@@ -225,5 +227,32 @@ HTML;
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Yapilandirilmis guvenlik header'larini mevcut yanita ekler.
+     *
+     * @param Response $response Mevcut yanit.
+     * @return Response
+     */
+    private function applySecurityHeaders(Response $response): Response
+    {
+        $headers = is_array($this->securityConfig['headers'] ?? null) ? $this->securityConfig['headers'] : [];
+
+        if ($headers === []) {
+            return $response;
+        }
+
+        $normalized = [];
+
+        foreach ($headers as $name => $value) {
+            if (! is_string($name) || ! is_scalar($value)) {
+                continue;
+            }
+
+            $normalized[$name] = (string) $value;
+        }
+
+        return $normalized === [] ? $response : $response->withHeaders($normalized);
     }
 }

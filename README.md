@@ -208,6 +208,17 @@ Partial include:
 
 Bu yapi ilgili view kokunde `partials/header.html` dosyasini ayni veri seti ile iceri alir.
 
+## Core Yardimcilari
+
+Core altinda static dizi yardimcisi da vardir:
+
+```php
+use Core\Arr;
+
+$city = Arr::get($payload, 'user.profile.city');
+$sorted = Arr::sortByKey($items, 'order');
+```
+
 URL helper:
 
 ```html

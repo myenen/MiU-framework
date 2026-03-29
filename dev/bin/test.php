@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 $tests = [
+    dirname(__DIR__) . '/tests/ArrTest.php',
     dirname(__DIR__) . '/tests/AuthorizationServiceTest.php',
     dirname(__DIR__) . '/tests/FileUploadServiceTest.php',
     dirname(__DIR__) . '/tests/IdentityServiceTest.php',

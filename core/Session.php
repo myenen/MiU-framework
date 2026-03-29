@@ -10,13 +10,51 @@ namespace Core;
 final class Session
 {
     /**
-     * Gerekli oldugunda PHP oturumunu baslatir.
+     * @param array<string, mixed> $config Session guvenlik ayarlari.
      */
-    public function __construct()
+    public function __construct(array $config = [])
     {
+        $this->configureSession($config);
+
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+    }
+
+    /**
+     * Session cookie guvenlik ayarlarini uygular.
+     *
+     * @param array<string, mixed> $config Session ayarlari.
+     * @return void
+     */
+    private function configureSession(array $config): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return;
+        }
+
+        $name = (string) ($config['name'] ?? 'MIUSESSID');
+        $lifetime = (int) ($config['lifetime'] ?? 0);
+        $path = (string) ($config['path'] ?? '/');
+        $domain = (string) ($config['domain'] ?? '');
+        $secure = (bool) ($config['secure'] ?? false);
+        $httpOnly = (bool) ($config['http_only'] ?? true);
+        $sameSite = (string) ($config['same_site'] ?? 'Lax');
+
+        session_name($name);
+        session_set_cookie_params([
+            'lifetime' => $lifetime,
+            'path' => $path,
+            'domain' => $domain,
+            'secure' => $secure,
+            'httponly' => $httpOnly,
+            'samesite' => $sameSite,
+        ]);
+
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.cookie_httponly', $httpOnly ? '1' : '0');
+        ini_set('session.cookie_secure', $secure ? '1' : '0');
     }
 
     /**

@@ -45,7 +45,7 @@ final class LoginController extends AdminController
      */
     public function login(Request $request): Response
     {
-        return $this->redirectResult($this->loginPage->login($request->all()), '/admin/login');
+        return $this->redirectResult($this->loginPage->login($request->all(), $request->ip()), '/admin/login');
     }
 
     /**

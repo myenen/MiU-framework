@@ -45,7 +45,7 @@ final class LoginController extends SiteController
      */
     public function login(Request $request): Response
     {
-        return $this->redirectResult($this->loginPage->login($request->all()), '/login');
+        return $this->redirectResult($this->loginPage->login($request->all(), $request->ip()), '/login');
     }
 
     /**

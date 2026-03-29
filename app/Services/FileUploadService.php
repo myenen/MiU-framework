@@ -14,9 +14,11 @@ final class FileUploadService
 {
     /**
      * @param string $uploadRoot Herkese acik yukleme kok dizini.
+     * @param array<string, mixed> $config Varsayilan upload guvenlik ayarlari.
      */
     public function __construct(
-        private readonly string $uploadRoot
+        private readonly string $uploadRoot,
+        private readonly array $config = []
     ) {
         $this->ensureDirectory($this->uploadRoot);
     }
@@ -35,10 +37,15 @@ final class FileUploadService
             throw new RuntimeException('File upload failed.');
         }
 
-        $maxSize = (int) ($options['max_size'] ?? 5 * 1024 * 1024);
-        $allowedExtensions = $options['allowed_extensions'] ?? [];
+        $resolvedOptions = $this->resolveOptions($directory, $options);
+        $maxSize = (int) ($resolvedOptions['max_size'] ?? 5 * 1024 * 1024);
+        $allowedExtensions = array_map('strtolower', (array) ($resolvedOptions['allowed_extensions'] ?? []));
+        $allowedMimeTypes = array_map('strtolower', (array) ($resolvedOptions['allowed_mime_types'] ?? []));
         $originalName = (string) ($file['name'] ?? 'file');
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        $clientMime = strtolower((string) ($file['type'] ?? ''));
+        $detectedMime = strtolower((string) $this->detectMimeType($tmpName));
 
         if ((int) ($file['size'] ?? 0) > $maxSize) {
             throw new RuntimeException('Uploaded file exceeds the allowed size.');
@@ -46,6 +53,14 @@ final class FileUploadService
 
         if ($allowedExtensions !== [] && ! in_array($extension, $allowedExtensions, true)) {
             throw new RuntimeException('Uploaded file extension is not allowed.');
+        }
+
+        if ($allowedMimeTypes !== []) {
+            $mimeToCheck = $detectedMime !== '' ? $detectedMime : $clientMime;
+
+            if ($mimeToCheck === '' || ! in_array($mimeToCheck, $allowedMimeTypes, true)) {
+                throw new RuntimeException('Uploaded file MIME type is not allowed.');
+            }
         }
 
         $channel = trim($directory, '/');
@@ -62,7 +77,6 @@ final class FileUploadService
         $baseName = $this->sanitizeFileName(pathinfo($originalName, PATHINFO_FILENAME));
         $fileName = $this->resolveUniqueFileName($targetDirectory, $baseName, $extension);
         $targetPath = $targetDirectory . '/' . $fileName;
-        $tmpName = (string) ($file['tmp_name'] ?? '');
 
         $moved = is_uploaded_file($tmpName)
             ? move_uploaded_file($tmpName, $targetPath)
@@ -77,7 +91,7 @@ final class FileUploadService
         $upload->original_name = $originalName;
         $upload->stored_name = $fileName;
         $upload->directory_name = $storageDirectory;
-        $upload->mime_type = (string) ($file['type'] ?? '');
+        $upload->mime_type = $detectedMime !== '' ? $detectedMime : (string) ($file['type'] ?? '');
         $upload->extension = $extension;
         $upload->size = (int) ($file['size'] ?? 0);
         $upload->public_path = $this->publicUploadPath($storageDirectory, $fileName);
@@ -171,5 +185,42 @@ final class FileUploadService
         if (! is_dir($path)) {
             mkdir($path, 0777, true);
         }
+    }
+
+    /**
+     * Channel bazli ve cagridan gelen ayarlari birlestirir.
+     *
+     * @param string $directory Kanal adi.
+     * @param array<string, mixed> $options Cagri bazli ayarlar.
+     * @return array<string, mixed>
+     */
+    private function resolveOptions(string $directory, array $options): array
+    {
+        $channel = trim($directory, '/');
+        $channels = is_array($this->config['channels'] ?? null) ? $this->config['channels'] : [];
+        $channelOptions = is_array($channels[$channel] ?? null) ? $channels[$channel] : [];
+
+        return array_merge($this->config, $channelOptions, $options);
+    }
+
+    /**
+     * Yuklenen dosyanin gercek MIME turunu cozer.
+     *
+     * @param string $path Gecici dosya yolu.
+     * @return string
+     */
+    private function detectMimeType(string $path): string
+    {
+        if ($path === '' || ! is_file($path)) {
+            return '';
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+
+        if (! $finfo instanceof \finfo) {
+            return '';
+        }
+
+        return (string) $finfo->file($path);
     }
 }

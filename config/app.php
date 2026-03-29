@@ -21,9 +21,38 @@ return [
     'cache' => [
         'ttl' => 60,
     ],
+    'session' => [
+        'name' => 'MIUSESSID',
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'http_only' => true,
+        'same_site' => 'Lax',
+    ],
     'debug' => [
         'enabled' => true,
         'log_file' => '',
+    ],
+    'security' => [
+        'headers' => [
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'X-Content-Type-Options' => 'nosniff',
+            'Referrer-Policy' => 'strict-origin-when-cross-origin',
+            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+        ],
+        'login_rate_limit' => [
+            'site' => [
+                'enabled' => true,
+                'max_attempts' => 5,
+                'decay_seconds' => 300,
+            ],
+            'admin' => [
+                'enabled' => true,
+                'max_attempts' => 5,
+                'decay_seconds' => 300,
+            ],
+        ],
     ],
     'logging' => [
         'request_log' => [
@@ -75,6 +104,41 @@ return [
         'reply_to_name' => '',
         'timeout' => 15,
         'debug' => 0,
+    ],
+    'upload' => [
+        'max_size' => 5 * 1024 * 1024,
+        'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip'],
+        'allowed_mime_types' => [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/plain',
+            'application/zip',
+            'application/x-zip-compressed',
+        ],
+        'channels' => [
+            'images' => [
+                'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+                'allowed_mime_types' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+            ],
+            'documents' => [
+                'allowed_extensions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'],
+                'allowed_mime_types' => [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'text/plain',
+                ],
+            ],
+        ],
     ],
     'api' => [
         'header' => 'X-Api-Token',

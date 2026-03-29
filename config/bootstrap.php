@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\Requests\Admin\AdminLoginRequest;
+use App\Requests\Site\SiteLoginRequest;
+use App\Services\Admin\AdminLoginPageService;
 use App\Services\GlobalTools;
 use App\Services\FileUploadService;
 use App\Services\IdentityService;
+use App\Services\Site\SiteLoginPageService;
 use App\Services\SystemInfoService;
 use App\Services\UserAuthService;
 use App\Services\AuthService;
@@ -78,7 +82,7 @@ function bootstrapApplication(string $basePath): Application
 
     $container->singleton('config', static fn () => $config);
     $container->singleton(Request::class, static fn () => $request);
-    $container->singleton(Session::class, static fn () => new Session());
+    $container->singleton(Session::class, static fn () => new Session($config['session'] ?? []));
     $container->singleton(Csrf::class, static fn (Container $container) => new Csrf(
         $container->get(Session::class)
     ));
@@ -146,8 +150,25 @@ function bootstrapApplication(string $basePath): Application
         $container->get(AuthorizationService::class),
         $config['api'] ?? []
     ));
+    $container->singleton(AdminLoginPageService::class, static fn (Container $container) => new AdminLoginPageService(
+        $container->get(AuthService::class),
+        $container->get(Session::class),
+        $container->get(Csrf::class),
+        $container->get(AdminLoginRequest::class),
+        $container->get(RateLimiter::class),
+        $config['security'] ?? []
+    ));
+    $container->singleton(SiteLoginPageService::class, static fn (Container $container) => new SiteLoginPageService(
+        $container->get(UserAuthService::class),
+        $container->get(Session::class),
+        $container->get(Csrf::class),
+        $container->get(SiteLoginRequest::class),
+        $container->get(RateLimiter::class),
+        $config['security'] ?? []
+    ));
     $container->singleton(FileUploadService::class, static fn () => new FileUploadService(
-        $basePath . '/public/uploads'
+        $basePath . '/public/uploads',
+        $config['upload'] ?? []
     ));
     $container->singleton(GlobalTools::class, static fn (Container $container) => new GlobalTools(
         $basePath . '/storage/logs/mail.log',
@@ -175,7 +196,8 @@ function bootstrapApplication(string $basePath): Application
         array_merge($config['routing'] ?? [], [
             'api' => $config['api'] ?? [],
         ]),
-        $config['debug'] ?? []
+        $config['debug'] ?? [],
+        $config['security'] ?? []
     );
 }
 

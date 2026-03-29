@@ -94,6 +94,17 @@ final class Response
     }
 
     /**
+     * Mevcut yanita ek header'lar ekleyerek yeni bir Response dondurur.
+     *
+     * @param array<string, string> $headers Eklenecek header'lar.
+     * @return self
+     */
+    public function withHeaders(array $headers): self
+    {
+        return new self($this->body, $this->status, array_merge($this->headers, $headers));
+    }
+
+    /**
      * Yaniti istemciye gonderir.
      */
     public function send(): void

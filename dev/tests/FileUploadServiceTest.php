@@ -41,4 +41,29 @@ $second = $service->uploadFile([
 assertSame('logo-file_1.png', $second['stored_name'], 'Ayni klasorde cakisanda sonuna sira numarasi eklenmeli.');
 assertTrue(file_exists($second['path']), 'Yuklenen ikinci dosya fiziksel olarak mevcut olmali.');
 
+$restrictedRoot = sys_get_temp_dir() . '/php-framework-upload-test-restricted-' . bin2hex(random_bytes(6));
+$restricted = new FileUploadService($restrictedRoot, [
+    'allowed_extensions' => ['png'],
+    'allowed_mime_types' => ['image/png'],
+]);
+
+$tmpThree = tempnam(sys_get_temp_dir(), 'upl');
+file_put_contents($tmpThree, 'third');
+
+$blocked = false;
+
+try {
+    $restricted->uploadFile([
+        'error' => UPLOAD_ERR_OK,
+        'name' => 'Archive.zip',
+        'tmp_name' => $tmpThree,
+        'size' => filesize($tmpThree),
+        'type' => 'application/zip',
+    ], 'site');
+} catch (RuntimeException) {
+    $blocked = true;
+}
+
+assertTrue($blocked, 'Whitelist disi uzanti engellenmeli.');
+
 echo "FileUploadServiceTest ok\n";
