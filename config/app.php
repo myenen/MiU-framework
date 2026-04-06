@@ -41,6 +41,16 @@ return [
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
         ],
+        'maintenance' => [
+            'enabled' => false,
+            'status' => 503,
+            'message' => 'Sistem gecici olarak bakimdadir. Lutfen daha sonra tekrar deneyin.',
+            'retry_after' => 600,
+            'allowed_paths' => [
+                '/api/v1/status',
+            ],
+            'allowed_ips' => [],
+        ],
         'login_rate_limit' => [
             'site' => [
                 'enabled' => true,

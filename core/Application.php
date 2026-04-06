@@ -38,6 +38,23 @@ final class Application
      */
     public function run(): void
     {
+        $response = $this->handle();
+        $response->send();
+    }
+
+    /**
+     * Mevcut istegi isler ve uretilen yaniti dondurur.
+     *
+     * @return Response
+     */
+    public function handle(): Response
+    {
+        $maintenanceResponse = $this->renderMaintenanceResponse();
+
+        if ($maintenanceResponse !== null) {
+            return $this->applySecurityHeaders($maintenanceResponse);
+        }
+
         $router = new Router(
             $this->container,
             $this->routes,
@@ -65,7 +82,7 @@ final class Application
             }
         }
 
-        $response->send();
+        return $response;
     }
 
     /**
@@ -254,5 +271,83 @@ HTML;
         }
 
         return $normalized === [] ? $response : $response->withHeaders($normalized);
+    }
+
+    /**
+     * Bakim modu aktifse uygun yaniti uretir.
+     *
+     * @return Response|null
+     */
+    private function renderMaintenanceResponse(): ?Response
+    {
+        $maintenance = is_array($this->securityConfig['maintenance'] ?? null)
+            ? $this->securityConfig['maintenance']
+            : [];
+
+        if (! (bool) ($maintenance['enabled'] ?? false)) {
+            return null;
+        }
+
+        $path = $this->request->path();
+        $allowedPaths = array_map('strval', (array) ($maintenance['allowed_paths'] ?? []));
+        $allowedIps = array_map('strval', (array) ($maintenance['allowed_ips'] ?? []));
+
+        if (in_array($path, $allowedPaths, true) || in_array($this->request->ip(), $allowedIps, true)) {
+            return null;
+        }
+
+        $status = max(503, (int) ($maintenance['status'] ?? 503));
+        $message = (string) ($maintenance['message'] ?? 'Sistem gecici olarak bakimdadir. Lutfen daha sonra tekrar deneyin.');
+        $retryAfter = max(0, (int) ($maintenance['retry_after'] ?? 600));
+
+        if ($this->isApiRequest()) {
+            return ApiResponse::error($message, $status, [], [], [
+                'path' => $path,
+                'method' => $this->request->method(),
+                'maintenance' => true,
+            ], [
+                'Retry-After' => (string) $retryAfter,
+            ]);
+        }
+
+        $body = $this->buildMaintenanceHtml($message);
+
+        return Response::html($body, $status, [
+            'Retry-After' => (string) $retryAfter,
+        ]);
+    }
+
+    /**
+     * Web istekleri icin sade bakim modu sayfasi uretir.
+     *
+     * @param string $message Kullaniciya gosterilecek metin.
+     * @return string
+     */
+    private function buildMaintenanceHtml(string $message): string
+    {
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakim Modu</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background:#f8fafc; color:#0f172a; margin:0; display:grid; place-items:center; min-height:100vh; padding:24px; }
+        .card { max-width:560px; text-align:center; background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:32px; box-shadow:0 16px 50px rgba(15,23,42,.08); }
+        h1 { margin:0 0 12px; font-size:28px; }
+        p { margin:0; color:#475569; line-height:1.6; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Bakim Modu</h1>
+        <p>{$message}</p>
+    </div>
+</body>
+</html>
+HTML;
     }
 }

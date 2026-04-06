@@ -54,6 +54,14 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+if (! class_exists('Arr', false)) {
+    class_alias(\Core\Arr::class, 'Arr');
+}
+
+if (! class_exists('Str', false)) {
+    class_alias(\Core\Str::class, 'Str');
+}
+
 /**
  * Uygulama kapsayicisini ve calisma zamani servislerini olusturur ve ayarlar.
  *

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiU Request Lifecycle</title>
+    <style>
+        :root {
+            --bg: #f3f6fb;
+            --card: #ffffff;
+            --text: #102038;
+            --muted: #5c6b82;
+            --border: #d8e0ec;
+            --blue: #3b82f6;
+            --green: #16a34a;
+            --orange: #ea580c;
+            --red: #dc2626;
+            --purple: #7c3aed;
+            --shadow: 0 18px 40px rgba(16, 32, 56, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 28px 24px 48px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 34px;
+        }
+
+        .intro {
+            margin: 0 0 24px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 980px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            font-size: 22px;
+        }
+
+        .diagram-wrap {
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        svg {
+            width: 100%;
+            min-width: 1280px;
+            height: auto;
+        }
+
+        .legend,
+        .checks,
+        .notes {
+            display: grid;
+            gap: 12px;
+        }
+
+        .legend {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .legend-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fbfdff;
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .checks {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .check-item,
+        .note-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fbfdff;
+        }
+
+        .check-item h3,
+        .note-item h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .check-item p,
+        .note-item p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        code {
+            background: #eef4ff;
+            border: 1px solid #d8e6ff;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>MiU Request Lifecycle</h1>
+        <p class="intro">
+            Bir HTTP istegi geldikten sonra MiU icinde hangi katmanlarin calistigini, hangi kontrollerin devreye girdigini ve
+            yanitin nasil olustugunu gosteren ozet sema. Bu akista hem statik route, hem dinamik router fallback, hem de
+            guvenlik kontrolleri birlikte gosterilir.
+        </p>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Gorsel Akis</h2>
+                <div class="diagram-wrap">
+                    <svg viewBox="0 0 1500 980" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiU request lifecycle diagram">
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,0 L10,5 L0,10 z" fill="#64748b"></path>
+                            </marker>
+                            <style>
+                                .box { rx: 18; ry: 18; stroke: #c9d6e8; stroke-width: 1.5; }
+                                .title { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #102038; }
+                                .text { font: 15px ui-sans-serif, system-ui, sans-serif; fill: #30425d; }
+                                .small { font: 13px ui-sans-serif, system-ui, sans-serif; fill: #58708f; }
+                                .arrow { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+                                .label { font: 12px ui-sans-serif, system-ui, sans-serif; fill: #475569; }
+                            </style>
+                        </defs>
+
+                        <rect class="box" x="40" y="40" width="300" height="96" fill="#eff6ff"></rect>
+                        <text class="title" x="64" y="78">1. HTTP Istegi</text>
+                        <text class="text" x="64" y="107">Browser / Admin / API / Mobil</text>
+
+                        <rect class="box" x="420" y="40" width="320" height="96" fill="#eefcf2"></rect>
+                        <text class="title" x="444" y="78">2. public/index.php</text>
+                        <text class="text" x="444" y="107">config/bootstrap.php yuklenir</text>
+
+                        <rect class="box" x="820" y="40" width="400" height="126" fill="#fff7ed"></rect>
+                        <text class="title" x="844" y="78">3. bootstrapApplication()</text>
+                        <text class="text" x="844" y="107">Config cozulur, Container kurulur</text>
+                        <text class="small" x="844" y="132">Request, Session, Csrf, DB, View, Identity, Logger, RateLimiter</text>
+
+                        <rect class="box" x="1240" y="40" width="220" height="96" fill="#f5f3ff"></rect>
+                        <text class="title" x="1264" y="78">4. Application::handle()</text>
+                        <text class="text" x="1264" y="107">Ana istek yasam dongusu</text>
+
+                        <path class="arrow" d="M340 88 L420 88"></path>
+                        <path class="arrow" d="M740 88 L820 88"></path>
+                        <path class="arrow" d="M1220 88 L1240 88"></path>
+
+                        <rect class="box" x="1180" y="220" width="280" height="124" fill="#fee2e2"></rect>
+                        <text class="title" x="1204" y="258">Bakim Modu Kontrolu</text>
+                        <text class="text" x="1204" y="287">security.maintenance.enabled</text>
+                        <text class="small" x="1204" y="312">allowed_paths / allowed_ips</text>
+
+                        <rect class="box" x="780" y="236" width="300" height="100" fill="#ecfeff"></rect>
+                        <text class="title" x="804" y="274">Bakim Yok</text>
+                        <text class="text" x="804" y="303">Router::dispatch()</text>
+
+                        <rect class="box" x="1180" y="400" width="280" height="136" fill="#fff1f2"></rect>
+                        <text class="title" x="1204" y="438">Bakim Yaniti</text>
+                        <text class="text" x="1204" y="467">Web: HTML 503 sayfasi</text>
+                        <text class="text" x="1204" y="493">API: JSON 503 hata</text>
+                        <text class="small" x="1204" y="518">Retry-After header eklenir</text>
+
+                        <path class="arrow" d="M1320 136 L1320 220"></path>
+                        <path class="arrow" d="M1180 282 L1080 282"></path>
+                        <text class="label" x="1098" y="270">hayir</text>
+                        <path class="arrow" d="M1320 344 L1320 400"></path>
+                        <text class="label" x="1336" y="370">evet</text>
+
+                        <rect class="box" x="40" y="220" width="300" height="110" fill="#eefcf2"></rect>
+                        <text class="title" x="64" y="258">5. API Rate Limit</text>
+                        <text class="text" x="64" y="287">Sadece /api/* icin</text>
+                        <text class="small" x="64" y="312">Token veya IP bazli 429 kontrolu</text>
+
+                        <rect class="box" x="420" y="220" width="300" height="110" fill="#eff6ff"></rect>
+                        <text class="title" x="444" y="258">6. Statik Route Eslesmesi</text>
+                        <text class="text" x="444" y="287">config/routes.php once denenir</text>
+                        <text class="small" x="444" y="312">make komutlari buraya route yazar</text>
+
+                        <path class="arrow" d="M780 286 L720 286"></path>
+                        <path class="arrow" d="M420 286 L340 286"></path>
+
+                        <rect class="box" x="40" y="390" width="300" height="174" fill="#eef2ff"></rect>
+                        <text class="title" x="64" y="428">7. Controller Calismadan Once</text>
+                        <text class="text" x="64" y="457">API Auth kontrolu</text>
+                        <text class="text" x="64" y="485">Role / Permission kontrolu</text>
+                        <text class="text" x="64" y="513">POST ise CSRF kontrolu</text>
+                        <text class="small" x="64" y="541">Basarisizsa erken Response doner</text>
+
+                        <rect class="box" x="420" y="390" width="300" height="174" fill="#effcf6"></rect>
+                        <text class="title" x="444" y="428">8. Statik Route Action</text>
+                        <text class="text" x="444" y="457">Controller method cagrilir</text>
+                        <text class="text" x="444" y="485">Request parametre olarak gider</text>
+                        <text class="small" x="444" y="513">Response / jsonResult / render doner</text>
+
+                        <path class="arrow" d="M190 330 L190 390"></path>
+                        <path class="arrow" d="M340 478 L420 478"></path>
+
+                        <rect class="box" x="820" y="390" width="320" height="174" fill="#f8fafc"></rect>
+                        <text class="title" x="844" y="428">9. Statik Route Yoksa</text>
+                        <text class="text" x="844" y="457">Dinamik Router Fallback</text>
+                        <text class="small" x="844" y="485">Cache -> class cozumle -> public method bul</text>
+                        <text class="small" x="844" y="511">method parametre sayisi kontrol et</text>
+                        <text class="small" x="844" y="537">sonra auth / permission / csrf</text>
+
+                        <rect class="box" x="1200" y="390" width="260" height="174" fill="#f5f3ff"></rect>
+                        <text class="title" x="1224" y="428">10. 404 / API Hata</text>
+                        <text class="text" x="1224" y="457">Eslesme yoksa</text>
+                        <text class="text" x="1224" y="485">Web: 404 HTML</text>
+                        <text class="text" x="1224" y="513">API: 404 JSON</text>
+
+                        <path class="arrow" d="M720 286 L820 286 L820 390"></path>
+                        <text class="label" x="744" y="272">eslesme yok</text>
+                        <path class="arrow" d="M1140 478 L1200 478"></path>
+                        <text class="label" x="1158" y="466">yok</text>
+
+                        <rect class="box" x="420" y="650" width="360" height="176" fill="#fff7ed"></rect>
+                        <text class="title" x="444" y="688">11. Controller Icinde</text>
+                        <text class="text" x="444" y="717">Service cagrilari</text>
+                        <text class="text" x="444" y="745">Models::get(...) / DB isleri</text>
+                        <text class="text" x="444" y="773">View render veya JSON uretimi</text>
+                        <text class="small" x="444" y="801">site / admin / api ayni servisleri paylasabilir</text>
+
+                        <rect class="box" x="860" y="650" width="360" height="176" fill="#eefcf2"></rect>
+                        <text class="title" x="884" y="688">12. Application Son Islemler</text>
+                        <text class="text" x="884" y="717">Security headers eklenir</text>
+                        <text class="text" x="884" y="745">RequestLogger kaydi duser</text>
+                        <text class="text" x="884" y="773">Exception varsa debug / prod response uretir</text>
+
+                        <rect class="box" x="1240" y="680" width="220" height="116" fill="#eff6ff"></rect>
+                        <text class="title" x="1264" y="718">13. Response::send()</text>
+                        <text class="text" x="1264" y="747">Header + body cikisi</text>
+
+                        <path class="arrow" d="M570 564 L570 650"></path>
+                        <path class="arrow" d="M980 564 L980 650"></path>
+                        <path class="arrow" d="M780 738 L860 738"></path>
+                        <path class="arrow" d="M1220 738 L1240 738"></path>
+
+                        <text class="small" x="70" y="614">API auth</text>
+                        <text class="small" x="70" y="632">web/admin csrf</text>
+                        <text class="small" x="70" y="650">role permissions</text>
+                    </svg>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Kontrol Matrisi</h2>
+                <div class="checks">
+                    <div class="check-item">
+                        <h3>Bakim Modu</h3>
+                        <p><code>Application::handle()</code> icinde ilk kontrol budur. Aktifse router'a hic girilmez. Web tarafinda 503 HTML, API tarafinda 503 JSON doner.</p>
+                    </div>
+                    <div class="check-item">
+                        <h3>API Rate Limit</h3>
+                        <p><code>Router::dispatch()</code> basinda sadece <code>/api/*</code> path'lerinde calisir. Token varsa token bazli, yoksa IP bazli sinirlama yapar.</p>
+                    </div>
+                    <div class="check-item">
+                        <h3>API Auth</h3>
+                        <p><code>ensureApiAuth()</code> protected API endpoint'lerde token dogrular. Public action ise atlanir. Basariliysa auth bilgisi request attribute olarak yazilir.</p>
+                    </div>
+                    <div class="check-item">
+                        <h3>Authorization</h3>
+                        <p><code>Controller::actionPermissions()</code> tanimliysa router bunu merkezi olarak kontrol eder. Rol ve izinler DB'deki <code>userRole.auth</code> alanindan gelir.</p>
+                    </div>
+                    <div class="check-item">
+                        <h3>CSRF</h3>
+                        <p>Sadece API disindaki <code>POST</code> isteklerde calisir. Token hataliysa request geldigi sayfaya veya ana dizine yonlendirilir.</p>
+                    </div>
+                    <div class="check-item">
+                        <h3>Request Logger</h3>
+                        <p>Response olustuktan sonra devreye girer. Hassas alanlari maskeler; istek, response ve hata bilgisini log tablosuna yazar.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Notlar</h2>
+                <div class="notes">
+                    <div class="note-item">
+                        <h3>Statik route once gelir</h3>
+                        <p><code>config/routes.php</code> icindeki kayitlar ilk tercih edilir. <code>make:site-page</code>, <code>make:admin-page</code> ve <code>make:api-endpoint</code> komutlari bu dosyaya otomatik kayit yazar.</p>
+                    </div>
+                    <div class="note-item">
+                        <h3>Dinamik router fallback olarak kalir</h3>
+                        <p>Statik route bulunamazsa controller ve action isimleri path'ten cozulur. Basarili cozumler cache'e yazilir; ama auth, permission ve csrf kontrolleri yine her istekte yeniden calisir.</p>
+                    </div>
+                    <div class="note-item">
+                        <h3>Controller ince kalacak sekilde tasarlandi</h3>
+                        <p>Controller request alir, gerekli servisi cagirir, response dondurur. Is kurallari servislerde, veri erisimi ise model katmaninda toplanir.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Renk Aciklamasi</h2>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background:#eff6ff"></span> Giris ve temel bootstrap adimlari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#eefcf2"></span> Basarili gecis / normal akis</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fff7ed"></span> Router veya uygulama karar noktalari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fee2e2"></span> Erken kesme / koruma / hata durumu</div>
+                    <div class="legend-item"><span class="swatch" style="background:#f5f3ff"></span> Son response veya yan yol</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

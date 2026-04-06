@@ -28,6 +28,9 @@ Bu repo icin ana rehber artik sadece bu dosyadir:
 
 - [README.md](/Users/mucahityenen/Desktop/Php-framework/README.md)
 - HTML framework referansi: [dev/docs/framework-reference.html](/Users/mucahityenen/Desktop/Php-framework/dev/docs/framework-reference.html)
+- Request lifecycle semasi: [dev/docs/request-lifecycle.html](/Users/mucahityenen/Desktop/Php-framework/dev/docs/request-lifecycle.html)
+- View / tema semasi: [dev/docs/view-lifecycle.html](/Users/mucahityenen/Desktop/Php-framework/dev/docs/view-lifecycle.html)
+- API semasi: [dev/docs/api-lifecycle.html](/Users/mucahityenen/Desktop/Php-framework/dev/docs/api-lifecycle.html)
 
 ## Klasor yapisi
 
@@ -213,11 +216,18 @@ Bu yapi ilgili view kokunde `partials/header.html` dosyasini ayni veri seti ile 
 Core altinda static dizi yardimcisi da vardir:
 
 ```php
-use Core\Arr;
-
 $city = Arr::get($payload, 'user.profile.city');
 $sorted = Arr::sortByKey($items, 'order');
 ```
+
+Core altinda static string yardimcisi da vardir:
+
+```php
+$slug = Str::slug('MiU Framework');
+$camel = Str::camel('user_profile');
+```
+
+`config/bootstrap.php` icinde `class_alias` tanimli oldugu icin `Arr` ve `Str` icin ayri `use` yazmak zorunlu degildir.
 
 URL helper:
 
@@ -251,6 +261,34 @@ Mantik:
 - `debug.enabled = true` ise local ortamda detayli hata HTML'i veya API icin detayli JSON doner
 - `debug.enabled = false` ise production icin sade hata sayfasi / sade JSON doner
 - tum yakalanan beklenmeyen hatalar ayrica `storage/logs/app.log` dosyasina yazilir
+
+## Bakim Modu
+
+Bakim modu `config/app.php` icindeki `security.maintenance` bolumunden acilip kapatilabilir:
+
+```php
+'security' => [
+    'maintenance' => [
+        'enabled' => false,
+        'status' => 503,
+        'message' => 'Sistem gecici olarak bakimdadir. Lutfen daha sonra tekrar deneyin.',
+        'retry_after' => 600,
+        'allowed_paths' => [
+            '/api/v1/status',
+        ],
+        'allowed_ips' => [],
+    ],
+],
+```
+
+Mantik:
+
+- `enabled = true` oldugunda sistem bakim moduna girer
+- web isteklerinde sade bir bakim sayfasi doner
+- API isteklerinde standart JSON hata yapisi doner
+- `Retry-After` header'i otomatik eklenir
+- `allowed_paths` icindeki yollar bakim modundan etkilenmez
+- `allowed_ips` icindeki IP'ler bakim modunu bypass eder
 
 ## API Standarti ve Rate Limit
 

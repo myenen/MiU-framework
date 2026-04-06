@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiU API Lifecycle</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --text: #132238;
+            --muted: #5b6c84;
+            --border: #d7e1ec;
+            --shadow: 0 18px 40px rgba(19, 34, 56, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 28px 24px 48px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 34px;
+        }
+
+        .intro {
+            margin: 0 0 24px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 980px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            font-size: 22px;
+        }
+
+        .diagram-wrap {
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        svg {
+            width: 100%;
+            min-width: 1420px;
+            height: auto;
+        }
+
+        .legend,
+        .notes,
+        .examples {
+            display: grid;
+            gap: 12px;
+        }
+
+        .legend {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .legend-item,
+        .note-item,
+        .example-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fbfdff;
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .notes,
+        .examples {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .note-item h3,
+        .example-item h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .note-item p,
+        .example-item p,
+        .example-item pre {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #eef4ff;
+            border: 1px solid #d8e6ff;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #233954;
+        }
+
+        code {
+            background: #eef4ff;
+            border: 1px solid #d8e6ff;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>MiU API Lifecycle</h1>
+        <p class="intro">
+            MiU icinde bir API istegi geldiginde public endpoint, protected endpoint, token dogrulama, rate limit,
+            validation ve permission kontrollerinin nasil zincir halinde calistigini gosteren gorsel ozet.
+        </p>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Genel API Akisi</h2>
+                <div class="diagram-wrap">
+                    <svg viewBox="0 0 1560 1040" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiU API lifecycle diagram">
+                        <defs>
+                            <marker id="arrow-api" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,0 L10,5 L0,10 z" fill="#64748b"></path>
+                            </marker>
+                            <style>
+                                .box { rx: 18; ry: 18; stroke: #c9d6e8; stroke-width: 1.5; }
+                                .title { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #132238; }
+                                .text { font: 15px ui-sans-serif, system-ui, sans-serif; fill: #33475f; }
+                                .small { font: 13px ui-sans-serif, system-ui, sans-serif; fill: #5b6c84; }
+                                .arrow { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrow-api); }
+                                .label { font: 12px ui-sans-serif, system-ui, sans-serif; fill: #475569; }
+                            </style>
+                        </defs>
+
+                        <rect class="box" x="40" y="40" width="300" height="110" fill="#eff6ff"></rect>
+                        <text class="title" x="64" y="80">1. API Istegi</text>
+                        <text class="text" x="64" y="110">/api/v1/... endpointi</text>
+                        <text class="small" x="64" y="135">mobil, web client veya baska servis</text>
+
+                        <rect class="box" x="410" y="40" width="320" height="110" fill="#eefcf2"></rect>
+                        <text class="title" x="434" y="80">2. Application</text>
+                        <text class="text" x="434" y="110">Router::dispatch() cagrilir</text>
+                        <text class="small" x="434" y="135">bakim modu aktif degilse</text>
+
+                        <rect class="box" x="800" y="40" width="320" height="132" fill="#fff7ed"></rect>
+                        <text class="title" x="824" y="80">3. API Rate Limit</text>
+                        <text class="text" x="824" y="110">ensureApiRateLimit()</text>
+                        <text class="small" x="824" y="136">token varsa token bazli, yoksa IP bazli</text>
+                        <text class="small" x="824" y="160">asarsa 429 + Retry-After</text>
+
+                        <rect class="box" x="1190" y="40" width="310" height="132" fill="#ecfeff"></rect>
+                        <text class="title" x="1214" y="80">4. Route Cozumu</text>
+                        <text class="text" x="1214" y="110">statik route once</text>
+                        <text class="text" x="1214" y="136">gerekirse dinamik fallback</text>
+                        <text class="small" x="1214" y="160">controller + action belirlenir</text>
+
+                        <path class="arrow" d="M340 95 L410 95"></path>
+                        <path class="arrow" d="M730 95 L800 95"></path>
+                        <path class="arrow" d="M1120 95 L1190 95"></path>
+
+                        <rect class="box" x="1220" y="240" width="280" height="154" fill="#f5f3ff"></rect>
+                        <text class="title" x="1244" y="280">5. Public mi?</text>
+                        <text class="text" x="1244" y="310">ApiController::publicActions()</text>
+                        <text class="small" x="1244" y="336">ornek: Auth::login public</text>
+                        <text class="small" x="1244" y="360">Users::index protected</text>
+
+                        <rect class="box" x="820" y="250" width="300" height="132" fill="#fee2e2"></rect>
+                        <text class="title" x="844" y="290">6. API Auth</text>
+                        <text class="text" x="844" y="320">ensureApiAuth()</text>
+                        <text class="small" x="844" y="346">X-Api-Token header kontrolu</text>
+                        <text class="small" x="844" y="370">eksik / gecersiz / inactive / expired -> 401</text>
+
+                        <path class="arrow" d="M1340 172 L1360 240"></path>
+                        <path class="arrow" d="M1220 320 L1120 320"></path>
+                        <text class="label" x="1146" y="306">hayir</text>
+
+                        <rect class="box" x="430" y="250" width="300" height="132" fill="#effcf6"></rect>
+                        <text class="title" x="454" y="290">7. Permission Kontrolu</text>
+                        <text class="text" x="454" y="320">actionPermissions()</text>
+                        <text class="small" x="454" y="346">users.view / users.edit / users.delete</text>
+                        <text class="small" x="454" y="370">DB rol izinleriyle karsilastirilir</text>
+
+                        <rect class="box" x="40" y="250" width="300" height="132" fill="#eef2ff"></rect>
+                        <text class="title" x="64" y="290">8. Controller Action</text>
+                        <text class="text" x="64" y="320">ApiController method calisir</text>
+                        <text class="small" x="64" y="346">Request JSON / form verisi okunur</text>
+                        <text class="small" x="64" y="370">servis katmani cagrilir</text>
+
+                        <path class="arrow" d="M820 320 L730 320"></path>
+                        <path class="arrow" d="M430 320 L340 320"></path>
+
+                        <rect class="box" x="40" y="470" width="300" height="166" fill="#fff7ed"></rect>
+                        <text class="title" x="64" y="510">9. Validation</text>
+                        <text class="text" x="64" y="540">AuthLoginRequest</text>
+                        <text class="text" x="64" y="568">UserCreateRequest / UserUpdateRequest</text>
+                        <text class="small" x="64" y="596">hata varsa standart 422 JSON doner</text>
+
+                        <rect class="box" x="430" y="470" width="300" height="166" fill="#eefcf2"></rect>
+                        <text class="title" x="454" y="510">10. Service Katmani</text>
+                        <text class="text" x="454" y="540">IdentityService veya UserService</text>
+                        <text class="small" x="454" y="568">is kurali, DB, token, user islemleri</text>
+                        <text class="small" x="454" y="596">ServiceResult doner</text>
+
+                        <rect class="box" x="820" y="470" width="320" height="166" fill="#ecfeff"></rect>
+                        <text class="title" x="844" y="510">11. ApiResponse Standarti</text>
+                        <text class="text" x="844" y="540">jsonResult() / apiError()</text>
+                        <text class="small" x="844" y="568">success, message, data, error, meta</text>
+                        <text class="small" x="844" y="596">status code ile birlikte doner</text>
+
+                        <rect class="box" x="1230" y="470" width="270" height="166" fill="#eff6ff"></rect>
+                        <text class="title" x="1254" y="510">12. Son Islemler</text>
+                        <text class="text" x="1254" y="540">security headers</text>
+                        <text class="text" x="1254" y="566">request logger</text>
+                        <text class="small" x="1254" y="594">response body log kurallarina gore</text>
+
+                        <path class="arrow" d="M190 382 L190 470"></path>
+                        <path class="arrow" d="M340 553 L430 553"></path>
+                        <path class="arrow" d="M730 553 L820 553"></path>
+                        <path class="arrow" d="M1140 553 L1230 553"></path>
+
+                        <rect class="box" x="1230" y="720" width="270" height="130" fill="#f5f3ff"></rect>
+                        <text class="title" x="1254" y="760">13. JSON Response</text>
+                        <text class="text" x="1254" y="790">istemciye doner</text>
+                        <text class="small" x="1254" y="816">mobil uygulama burada sonucu alir</text>
+
+                        <path class="arrow" d="M1365 636 L1365 720"></path>
+
+                        <rect class="box" x="820" y="720" width="300" height="130" fill="#fee2e2"></rect>
+                        <text class="title" x="844" y="760">Login Haric Hata Yollari</text>
+                        <text class="text" x="844" y="790">401 auth, 403 permission, 404 route, 422 validation, 429 rate limit</text>
+                        <text class="small" x="844" y="816">hepsi standart JSON formatinda</text>
+                    </svg>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Login Akisi</h2>
+                <div class="notes">
+                    <div class="note-item">
+                        <h3>Public Endpoint</h3>
+                        <p><code>/api/v1/auth/login</code> public action olarak isaretlidir. Bu yuzden ilk login isteginde token beklenmez.</p>
+                    </div>
+                    <div class="note-item">
+                        <h3>Validation</h3>
+                        <p><code>AuthLoginRequest</code> email, password ve varsa device_name alanlarini kontrol eder.</p>
+                    </div>
+                    <div class="note-item">
+                        <h3>IdentityService</h3>
+                        <p><code>loginUserForApi()</code> once kullanici sifresini dogrular, sonra yeni token olusturur ve <code>api_tokens</code> tablosuna kaydeder.</p>
+                    </div>
+                    <div class="note-item">
+                        <h3>Token TTL</h3>
+                        <p>Token olusurken <code>expires_at = simdi + token_ttl</code> yazilir. Protected endpoint her kullanildiginda sure uzatilir; gecmisse 401 doner.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Ornek Akislar</h2>
+                <div class="examples">
+                    <div class="example-item">
+                        <h3>1. Login Istegi</h3>
+                        <p>Ilk giriste token yoktur, sadece login endpoint cagrilir.</p>
+                        <pre>POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "123456",
+  "device_name": "iPhone"
+}</pre>
+                    </div>
+                    <div class="example-item">
+                        <h3>2. Protected Istek</h3>
+                        <p>Login sonrasi gelen token header ile gonderilir.</p>
+                        <pre>GET /api/v1/users
+X-Api-Token: kullanicidan-donen-token</pre>
+                    </div>
+                    <div class="example-item">
+                        <h3>3. Permission Mantigi</h3>
+                        <p>Controller bazli yetkiler router tarafinda merkezi kontrol edilir.</p>
+                        <pre>public static function actionPermissions(): array
+{
+    return [
+        'index' => 'users.view',
+        'create' => 'users.edit',
+        'delete' => 'users.delete',
+    ];
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Renk Aciklamasi</h2>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background:#eff6ff"></span> giris ve son response adimlari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#eefcf2"></span> basarili gecis / servis akis</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fff7ed"></span> rate limit, validation ve karar noktalari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#ecfeff"></span> route ve response standardi</div>
+                    <div class="legend-item"><span class="swatch" style="background:#f5f3ff"></span> public endpoint veya son json adimlari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fee2e2"></span> auth / expired / error yolları</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

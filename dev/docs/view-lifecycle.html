@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiU View Lifecycle</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --text: #132238;
+            --muted: #5b6c84;
+            --border: #d7e1ec;
+            --shadow: 0 18px 40px rgba(19, 34, 56, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 28px 24px 48px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 34px;
+        }
+
+        .intro {
+            margin: 0 0 24px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 980px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            font-size: 22px;
+        }
+
+        .diagram-wrap {
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        svg {
+            width: 100%;
+            min-width: 1360px;
+            height: auto;
+        }
+
+        .legend,
+        .rules,
+        .syntax {
+            display: grid;
+            gap: 12px;
+        }
+
+        .legend {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .legend-item,
+        .rule-item,
+        .syntax-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fbfdff;
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .rules,
+        .syntax {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .rule-item h3,
+        .syntax-item h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .rule-item p,
+        .syntax-item p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        code {
+            background: #eef4ff;
+            border: 1px solid #d8e6ff;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>MiU Theme / View Lifecycle</h1>
+        <p class="intro">
+            MiU icinde bir temanin framework'e nasil oturdugunu ve bir request sirasinda view motorunun bunu nasil isledigini
+            gosteren gorsel ozet. Burada iki katman birlikte anlatilir: once tema dosyalari <code>layout + partial + page</code>
+            yapisina oturur, sonra <code>Core\View\View</code> bu dosyalari placeholder, dil ve helper kurallariyla render eder.
+        </p>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Render Akisi</h2>
+                <div class="diagram-wrap">
+                    <svg viewBox="0 0 1560 1060" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiU view lifecycle diagram">
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,0 L10,5 L0,10 z" fill="#64748b"></path>
+                            </marker>
+                            <style>
+                                .box { rx: 18; ry: 18; stroke: #c9d6e8; stroke-width: 1.5; }
+                                .title { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #132238; }
+                                .text { font: 15px ui-sans-serif, system-ui, sans-serif; fill: #33475f; }
+                                .small { font: 13px ui-sans-serif, system-ui, sans-serif; fill: #5b6c84; }
+                                .arrow { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+                                .label { font: 12px ui-sans-serif, system-ui, sans-serif; fill: #475569; }
+                            </style>
+                        </defs>
+
+                        <rect class="box" x="40" y="40" width="320" height="110" fill="#eff6ff"></rect>
+                        <text class="title" x="64" y="80">1. Controller / PageController</text>
+                        <text class="text" x="64" y="110">render() veya renderPageResult()</text>
+                        <text class="small" x="64" y="135">template + data + opsiyonel layout verir</text>
+
+                        <rect class="box" x="430" y="40" width="360" height="140" fill="#eefcf2"></rect>
+                        <text class="title" x="454" y="80">2. Dogru View Nesnesi</text>
+                        <text class="text" x="454" y="110">view.site / view.admin / view.mail.*</text>
+                        <text class="small" x="454" y="135">basePath + defaultLayout + sharedData + LanguageService</text>
+                        <text class="small" x="454" y="160">config/bootstrap.php icinde hazirlanir</text>
+
+                        <rect class="box" x="860" y="40" width="340" height="110" fill="#fff7ed"></rect>
+                        <text class="title" x="884" y="80">3. View::render()</text>
+                        <text class="text" x="884" y="110">sharedData + page data birlesir</text>
+                        <text class="small" x="884" y="135">once page, sonra layout render edilir</text>
+
+                        <rect class="box" x="1260" y="40" width="260" height="110" fill="#f5f3ff"></rect>
+                        <text class="title" x="1284" y="80">4. renderFile()</text>
+                        <text class="text" x="1284" y="110">basePath/template.html</text>
+                        <text class="small" x="1284" y="135">dosya okunur, yoksa exception</text>
+
+                        <path class="arrow" d="M360 95 L430 95"></path>
+                        <path class="arrow" d="M790 95 L860 95"></path>
+                        <path class="arrow" d="M1200 95 L1260 95"></path>
+
+                        <rect class="box" x="1120" y="220" width="400" height="150" fill="#ecfeff"></rect>
+                        <text class="title" x="1144" y="260">5. parseTemplate()</text>
+                        <text class="text" x="1144" y="290">A. Conditional blocks</text>
+                        <text class="text" x="1144" y="317">B. Partial include blocks</text>
+                        <text class="text" x="1144" y="344">C. Translation placeholders</text>
+
+                        <path class="arrow" d="M1390 150 L1320 220"></path>
+
+                        <rect class="box" x="720" y="250" width="300" height="130" fill="#eef2ff"></rect>
+                        <text class="title" x="744" y="290">Kosul Bloklari</text>
+                        <text class="text" x="744" y="320"><code>{?admin_logged_in}</code></text>
+                        <text class="text" x="744" y="346"><code>{?!site_user_logged_in}</code></text>
+                        <text class="text" x="744" y="372"><code>{?can:users.edit}</code></text>
+
+                        <rect class="box" x="360" y="250" width="280" height="130" fill="#effcf6"></rect>
+                        <text class="title" x="384" y="290">Partial Dahil Etme</text>
+                        <text class="text" x="384" y="320"><code>{&gt;partials/header}</code></text>
+                        <text class="small" x="384" y="348">ayni data ile baska html dosyasi render edilir</text>
+
+                        <rect class="box" x="40" y="250" width="260" height="130" fill="#fef3c7"></rect>
+                        <text class="title" x="64" y="290">Ceviri Placeholder</text>
+                        <text class="text" x="64" y="320"><code>{{Merhaba}}</code></text>
+                        <text class="small" x="64" y="348">LanguageService ile DB'den cozulur</text>
+
+                        <path class="arrow" d="M1120 295 L1020 315"></path>
+                        <path class="arrow" d="M1120 295 L640 315"></path>
+                        <path class="arrow" d="M1120 295 L300 315"></path>
+
+                        <rect class="box" x="40" y="450" width="330" height="170" fill="#fee2e2"></rect>
+                        <text class="title" x="64" y="490">6. LanguageService</text>
+                        <text class="text" x="64" y="520">aktif locale cozer</text>
+                        <text class="text" x="64" y="548">ceviri tablosunu yukler</text>
+                        <text class="text" x="64" y="576">gerekirse {{...}} kaydi otomatik acar</text>
+                        <text class="small" x="64" y="603">aktif dil bos ise varsayilan dil fallback</text>
+
+                        <rect class="box" x="440" y="450" width="320" height="170" fill="#eff6ff"></rect>
+                        <text class="title" x="464" y="490">7. Normal Placeholder</text>
+                        <text class="text" x="464" y="520"><code>{title}</code>, <code>{content}</code></text>
+                        <text class="text" x="464" y="548">RawValue ise escape edilmez</text>
+                        <text class="small" x="464" y="576">diger scalar degerler htmlspecialchars ile yazilir</text>
+
+                        <rect class="box" x="830" y="450" width="320" height="170" fill="#eefcf2"></rect>
+                        <text class="title" x="854" y="490">8. Helper Placeholder</text>
+                        <text class="text" x="854" y="520"><code>{url:/login}</code></text>
+                        <text class="text" x="854" y="548"><code>{asset:/image/logo.png}</code></text>
+                        <text class="small" x="854" y="576">app_url ve assets_url ile birlestirilir</text>
+
+                        <rect class="box" x="1220" y="450" width="300" height="170" fill="#fff7ed"></rect>
+                        <text class="title" x="1244" y="490">9. Page HTML Hazir</text>
+                        <text class="text" x="1244" y="520">icerik artik saf HTML</text>
+                        <text class="text" x="1244" y="548">View::render() bunu RawValue(content) yapar</text>
+                        <text class="small" x="1244" y="576">sonra layout tekrar parse edilir</text>
+
+                        <path class="arrow" d="M170 380 L170 450"></path>
+                        <path class="arrow" d="M620 380 L620 450"></path>
+                        <path class="arrow" d="M980 380 L980 450"></path>
+                        <path class="arrow" d="M1320 370 L1320 450"></path>
+
+                        <rect class="box" x="40" y="700" width="360" height="180" fill="#f5f3ff"></rect>
+                        <text class="title" x="64" y="740">10. Layout Parse</text>
+                        <text class="text" x="64" y="770">layouts/main.html gibi layout acilir</text>
+                        <text class="text" x="64" y="798"><code>{content}</code> RawValue olarak yerlestirilir</text>
+                        <text class="small" x="64" y="826">header/sidebar/footer partial'lari layout icinde olabilir</text>
+
+                        <rect class="box" x="470" y="700" width="360" height="180" fill="#ecfeff"></rect>
+                        <text class="title" x="494" y="740">11. Son HTML</text>
+                        <text class="text" x="494" y="770">layout + page + partial + ceviri birlesmis olur</text>
+                        <text class="text" x="494" y="798">View::render() string dondurur</text>
+
+                        <rect class="box" x="900" y="700" width="300" height="180" fill="#eefcf2"></rect>
+                        <text class="title" x="924" y="740">12. Controller Response</text>
+                        <text class="text" x="924" y="770">Response::html(...)</text>
+                        <text class="text" x="924" y="798">veya PageController helper</text>
+
+                        <rect class="box" x="1270" y="700" width="250" height="180" fill="#eff6ff"></rect>
+                        <text class="title" x="1294" y="740">13. Browser Cikisi</text>
+                        <text class="text" x="1294" y="770">tam HTML response</text>
+                        <text class="small" x="1294" y="798">CSS / JS referanslari template icinde kalir</text>
+
+                        <path class="arrow" d="M1320 620 L220 700"></path>
+                        <path class="arrow" d="M400 790 L470 790"></path>
+                        <path class="arrow" d="M830 790 L900 790"></path>
+                        <path class="arrow" d="M1200 790 L1270 790"></path>
+                    </svg>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Tema Uyarlama Akisi</h2>
+                <div class="diagram-wrap">
+                    <svg viewBox="0 0 1560 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiU theme adaptation diagram">
+                        <defs>
+                            <marker id="arrow-theme" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,0 L10,5 L0,10 z" fill="#64748b"></path>
+                            </marker>
+                            <style>
+                                .box2 { rx: 18; ry: 18; stroke: #c9d6e8; stroke-width: 1.5; }
+                                .title2 { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #132238; }
+                                .text2 { font: 15px ui-sans-serif, system-ui, sans-serif; fill: #33475f; }
+                                .small2 { font: 13px ui-sans-serif, system-ui, sans-serif; fill: #5b6c84; }
+                                .arrow2 { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrow-theme); }
+                            </style>
+                        </defs>
+
+                        <rect class="box2" x="40" y="40" width="300" height="132" fill="#fff7ed"></rect>
+                        <text class="title2" x="64" y="80">1. Hazir HTML Tema</text>
+                        <text class="text2" x="64" y="110">index.html, sidebar, header, footer</text>
+                        <text class="small2" x="64" y="138">CSS / JS / image referanslari tema icinde gelir</text>
+
+                        <rect class="box2" x="410" y="40" width="340" height="164" fill="#ecfeff"></rect>
+                        <text class="title2" x="434" y="80">2. template:import Analizi</text>
+                        <text class="text2" x="434" y="110">dev/bin/import-template.php</text>
+                        <text class="text2" x="434" y="138">frameworke import etmez</text>
+                        <text class="small2" x="434" y="166">layout / partial / page adaylarini ayirir</text>
+                        <text class="small2" x="434" y="190">assets.json ve summary.json uretir</text>
+
+                        <rect class="box2" x="820" y="40" width="360" height="164" fill="#eefcf2"></rect>
+                        <text class="title2" x="844" y="80">3. Manuel Uyarlama</text>
+                        <text class="text2" x="844" y="110">developer tema parcalarini secerek yerlestirir</text>
+                        <text class="small2" x="844" y="138">layout -> resources/views/*/layouts/</text>
+                        <text class="small2" x="844" y="162">partial -> resources/views/*/partials/</text>
+                        <text class="small2" x="844" y="186">page -> resources/views/*/pages/</text>
+
+                        <rect class="box2" x="1250" y="40" width="260" height="132" fill="#eff6ff"></rect>
+                        <text class="title2" x="1274" y="80">4. Asset Tasima</text>
+                        <text class="text2" x="1274" y="110">CSS / JS / image dosyalari</text>
+                        <text class="small2" x="1274" y="138">public/assets/... altina konur</text>
+
+                        <path class="arrow2" d="M340 106 L410 106"></path>
+                        <path class="arrow2" d="M750 122 L820 122"></path>
+                        <path class="arrow2" d="M1180 106 L1250 106"></path>
+
+                        <rect class="box2" x="40" y="290" width="340" height="176" fill="#eef2ff"></rect>
+                        <text class="title2" x="64" y="330">5. Tema Dosya Yapisi</text>
+                        <text class="text2" x="64" y="360">layouts/main.html veya auth.html</text>
+                        <text class="text2" x="64" y="388">partials/header.html, sidebar.html, footer.html</text>
+                        <text class="text2" x="64" y="416">pages/dashboard.html, home.html</text>
+                        <text class="small2" x="64" y="444">tema artik MiU view yapisina oturmus olur</text>
+
+                        <rect class="box2" x="450" y="290" width="330" height="176" fill="#fef3c7"></rect>
+                        <text class="title2" x="474" y="330">6. Placeholder Donusumu</text>
+                        <text class="text2" x="474" y="360">sabit metin -> {{...}}</text>
+                        <text class="text2" x="474" y="388">degisken alan -> {...}</text>
+                        <text class="text2" x="474" y="416">partial alan -> {&gt;partials/...}</text>
+                        <text class="small2" x="474" y="444">izin bloklari ve helper'lar da eklenebilir</text>
+
+                        <rect class="box2" x="850" y="290" width="330" height="176" fill="#effcf6"></rect>
+                        <text class="title2" x="874" y="330">7. Asset Referanslari</text>
+                        <text class="text2" x="874" y="360">orijinal linkler korunabilir</text>
+                        <text class="text2" x="874" y="388">veya {asset:/...} formatina cevrilir</text>
+                        <text class="small2" x="874" y="416">assets_url otomatik gelir</text>
+                        <text class="small2" x="874" y="440">boylece ortam degisince linkler bozulmaz</text>
+
+                        <rect class="box2" x="1250" y="290" width="260" height="176" fill="#f5f3ff"></rect>
+                        <text class="title2" x="1274" y="330">8. Tema Canli Kullanim</text>
+                        <text class="text2" x="1274" y="360">Controller ilgili page'i render eder</text>
+                        <text class="text2" x="1274" y="388">layout + page + assets birlikte calisir</text>
+                        <text class="small2" x="1274" y="416">artik normal framework akisinin parcasi olur</text>
+
+                        <path class="arrow2" d="M1360 172 L1360 290"></path>
+                        <path class="arrow2" d="M990 204 L990 290"></path>
+                        <path class="arrow2" d="M210 172 L210 290"></path>
+                        <path class="arrow2" d="M380 378 L450 378"></path>
+                        <path class="arrow2" d="M780 378 L850 378"></path>
+                        <path class="arrow2" d="M1180 378 L1250 378"></path>
+
+                        <rect class="box2" x="340" y="560" width="880" height="130" fill="#eff6ff"></rect>
+                        <text class="title2" x="364" y="600">Ozet</text>
+                        <text class="text2" x="364" y="630">MiU tema motoru otomatik theme engine degil; hazir HTML temayi framework yapisina oturtan hafif bir render katmani sunar.</text>
+                        <text class="small2" x="364" y="658">Yani tema once layout / partial / page olarak duzenlenir, sonra View motoru bunu placeholder, dil ve helper kurallariyla calistirir.</text>
+                    </svg>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Template Syntax Ozet</h2>
+                <div class="syntax">
+                    <div class="syntax-item">
+                        <h3>Normal Data</h3>
+                        <p><code>{title}</code>, <code>{admin_name}</code>, <code>{content}</code> gibi veriler page service veya shared view data icinden gelir.</p>
+                    </div>
+                    <div class="syntax-item">
+                        <h3>Translation</h3>
+                        <p><code>{{Lutfen alaninizi seciniz}}</code> formatinda yazilir. DB'de yoksa varsayilan dil icin kayit olusturulur, diger diller bos acilir.</p>
+                    </div>
+                    <div class="syntax-item">
+                        <h3>Partial Include</h3>
+                        <p><code>{&gt;partials/header}</code> ayni view kokundeki ilgili <code>.html</code> dosyasini mevcut data ile render eder.</p>
+                    </div>
+                    <div class="syntax-item">
+                        <h3>Condition</h3>
+                        <p><code>{?admin_logged_in}...{/admin_logged_in}</code> ve <code>{?can:users.edit}...{/can:users.edit}</code> bloklari desteklenir.</p>
+                    </div>
+                    <div class="syntax-item">
+                        <h3>URL Helper</h3>
+                        <p><code>{url:/login}</code> ve <code>{asset:/css/app.css}</code> path'leri otomatik URL'ye cevirir.</p>
+                    </div>
+                    <div class="syntax-item">
+                        <h3>Raw HTML</h3>
+                        <p><code>RawValue</code> kullanilan alanlar escape edilmeden render edilir. Ozellikle <code>{content}</code> layout icinde bu sekilde tasinir.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Temel Kurallar</h2>
+                <div class="rules">
+                    <div class="rule-item">
+                        <h3>Tema once parcalanir</h3>
+                        <p>MiU temayi tek parca magic sekilde yonetmez. En saglikli kullanim, temayi <code>layout + partial + page</code> yapisina bolup sonra framework'e yerlestirmektir.</p>
+                    </div>
+                    <div class="rule-item">
+                        <h3>Page once, layout sonra</h3>
+                        <p>MiU once page template'ini render eder. Sonra ortaya cikan HTML'i <code>RawValue(content)</code> olarak layout'a enjekte eder.</p>
+                    </div>
+                    <div class="rule-item">
+                        <h3>View kokleri ayridir</h3>
+                        <p>Site, admin ve mail taraflari farkli <code>basePath</code> ile calisir. Ama hepsi ayni <code>Core\View\View</code> sinifini kullanir.</p>
+                    </div>
+                    <div class="rule-item">
+                        <h3>Shared data otomatik gelir</h3>
+                        <p><code>app_url</code>, <code>assets_url</code>, locale bilgileri, giris yapan kullanici ve izinler bootstrap asamasinda view nesnesine eklenir.</p>
+                    </div>
+                    <div class="rule-item">
+                        <h3>Ceviriler runtime'da kaydolabilir</h3>
+                        <p><code>{{...}}</code> placeholder ilk goruldugunde veritabanina otomatik kaydedilir. Bu, daha sonra panelden toplu ceviri yapmayi kolaylastirir.</p>
+                    </div>
+                    <div class="rule-item">
+                        <h3>Asset referanslari temanin parcasi olarak kalir</h3>
+                        <p>Tema icindeki CSS ve JS linkleri ister oldugu gibi birakilir, ister <code>{asset:/...}</code> formatina cevrilir. Framework bunlari runtime'da dogru URL ile birlestirir.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Renk Aciklamasi</h2>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background:#eff6ff"></span> Controller ve normal placeholder akisi</div>
+                    <div class="legend-item"><span class="swatch" style="background:#eefcf2"></span> View nesnesi ve basarili render adimlari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fff7ed"></span> Parse ve layout asamalari</div>
+                    <div class="legend-item"><span class="swatch" style="background:#f5f3ff"></span> Son html / cikan response</div>
+                    <div class="legend-item"><span class="swatch" style="background:#fee2e2"></span> Dil sistemi ve DB tabanli ceviri akis</div>
+                    <div class="legend-item"><span class="swatch" style="background:#ecfeff"></span> Placeholder motoru icindeki ara adimlar</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
