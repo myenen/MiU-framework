@@ -73,7 +73,8 @@ function bootstrapApplication(string $basePath): Application
     $config = require $basePath . '/config/app.php';
     $environment = (string) ($config['environment'] ?? 'local');
     $config['debug'] = resolveDebugConfig($config['debug'] ?? [], $environment, $basePath);
-    $config['database'] = resolveDatabaseConfig($config['database'] ?? [], (string) ($config['environment'] ?? 'local'));
+    $databaseRootConfig = is_array($config['database'] ?? null) ? $config['database'] : [];
+    $config['database'] = resolveDatabaseConfig($databaseRootConfig, (string) ($config['environment'] ?? 'local'));
     $config['app']['url'] = resolveUrlConfig($config['app'] ?? [], $environment);
     $config['assets']['url'] = buildAssetUrl(
         (string) ($config['app']['url'] ?? ''),
@@ -196,6 +197,11 @@ function bootstrapApplication(string $basePath): Application
     $container->get(Session::class);
     Models::setDb($container->get(Database::class)->pdo());
     Models::setSchema((string) (($config['database']['schema'] ?? 'public')));
+    Models::setModelCacheConfig(resolveModelCacheConfig(
+        $databaseRootConfig,
+        $config['database'] ?? [],
+        $basePath
+    ));
 
     return new Application(
         $container,
@@ -207,6 +213,34 @@ function bootstrapApplication(string $basePath): Application
         $config['debug'] ?? [],
         $config['security'] ?? []
     );
+}
+
+/**
+ * Model metadata cache ayarlarini cozer.
+ *
+ * @param array<string, mixed> $databaseRootConfig Kok veritabani yapilandirmasi.
+ * @param array<string, mixed> $resolvedDatabaseConfig Aktif baglanti yapilandirmasi.
+ * @param string $basePath Proje kok yolu.
+ * @return array<string, mixed>
+ */
+function resolveModelCacheConfig(array $databaseRootConfig, array $resolvedDatabaseConfig, string $basePath): array
+{
+    $cacheConfig = is_array($databaseRootConfig['model_cache'] ?? null)
+        ? $databaseRootConfig['model_cache']
+        : [];
+
+    $driver = (string) ($resolvedDatabaseConfig['driver'] ?? 'unknown');
+    $schema = (string) ($resolvedDatabaseConfig['schema'] ?? 'public');
+    $database = (string) ($resolvedDatabaseConfig['database'] ?? basename((string) ($resolvedDatabaseConfig['sqlite_database'] ?? 'database')));
+    $host = (string) ($resolvedDatabaseConfig['host'] ?? 'localhost');
+    $namespace = $driver . '-' . $host . '-' . $database . '-' . $schema;
+
+    return [
+        'enabled' => (bool) ($cacheConfig['enabled'] ?? true),
+        'refresh' => (bool) ($cacheConfig['refresh'] ?? false),
+        'path' => (string) ($cacheConfig['path'] ?? ($basePath . '/storage/cache/models')),
+        'namespace' => $namespace,
+    ];
 }
 
 /**

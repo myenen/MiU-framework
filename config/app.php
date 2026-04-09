@@ -166,6 +166,11 @@ return [
     ],
     'database' => [
         'active' => 'local',
+        'model_cache' => [
+            'enabled' => true,
+            'refresh' => false,
+            'path' => dirname(__DIR__) . '/storage/cache/models',
+        ],
         'connections' => [
             'local' => [
                 'driver' => 'mysql',

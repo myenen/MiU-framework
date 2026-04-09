@@ -1,0 +1,68 @@
+{
+    "driver": "mysql",
+    "schema": "public",
+    "table": "log",
+    "generated_at": 1775740519,
+    "columns": [
+        {
+            "name": "id",
+            "type": "int unsigned"
+        },
+        {
+            "name": "method",
+            "type": "varchar(20)"
+        },
+        {
+            "name": "path",
+            "type": "varchar(255)"
+        },
+        {
+            "name": "query_params",
+            "type": "longtext"
+        },
+        {
+            "name": "request_body",
+            "type": "longtext"
+        },
+        {
+            "name": "request_headers",
+            "type": "longtext"
+        },
+        {
+            "name": "request_files",
+            "type": "longtext"
+        },
+        {
+            "name": "response_status",
+            "type": "int"
+        },
+        {
+            "name": "response_headers",
+            "type": "longtext"
+        },
+        {
+            "name": "response_body",
+            "type": "longtext"
+        },
+        {
+            "name": "ip_address",
+            "type": "varchar(45)"
+        },
+        {
+            "name": "user_agent",
+            "type": "text"
+        },
+        {
+            "name": "error_message",
+            "type": "text"
+        },
+        {
+            "name": "created_at",
+            "type": "bigint unsigned"
+        },
+        {
+            "name": "updated_at",
+            "type": "bigint unsigned"
+        }
+    ]
+}

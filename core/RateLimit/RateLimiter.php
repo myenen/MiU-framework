@@ -60,4 +60,15 @@ final class RateLimiter
             'reset_at' => $resetAt,
         ];
     }
+
+    /**
+     * Verilen anahtara ait rate limit durumunu sifirlar.
+     *
+     * @param string $key Rate limit anahtari.
+     * @return void
+     */
+    public function clear(string $key): void
+    {
+        $this->cache->forget($key);
+    }
 }

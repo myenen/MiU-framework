@@ -1,0 +1,36 @@
+{
+    "driver": "mysql",
+    "schema": "public",
+    "table": "languages",
+    "generated_at": 1775740519,
+    "columns": [
+        {
+            "name": "id",
+            "type": "int unsigned"
+        },
+        {
+            "name": "code",
+            "type": "varchar(10)"
+        },
+        {
+            "name": "name",
+            "type": "varchar(100)"
+        },
+        {
+            "name": "is_active",
+            "type": "tinyint(1)"
+        },
+        {
+            "name": "is_default",
+            "type": "tinyint(1)"
+        },
+        {
+            "name": "created_at",
+            "type": "bigint unsigned"
+        },
+        {
+            "name": "updated_at",
+            "type": "bigint unsigned"
+        }
+    ]
+}

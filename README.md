@@ -548,6 +548,27 @@ $user->status = 'active';
 $user->save();
 ```
 
+Model metadata olusturma artik dosya bazli cache ile calisabilir. Bu sayede her `Models::get('...')` cagrisi tablo sutunlarini tekrar tekrar sorgulamak zorunda kalmaz.
+
+Config:
+
+```php
+'database' => [
+    'model_cache' => [
+        'enabled' => true,
+        'refresh' => false,
+        'path' => dirname(__DIR__) . '/storage/cache/models',
+    ],
+],
+```
+
+Mantik:
+
+- `enabled = true` ise tablo metadata bilgisi dosyaya yazilir ve sonraki cagrilarda buradan okunur
+- `refresh = false` ise mevcut cache kullanilir
+- `refresh = true` ise cache atlanir ve metadata yeniden DB'den uretilip dosyaya yazilir
+- bu ayar ozellikle tablo yapisi degistiginde modeli tekrar guncellemek icin kullanilir
+
 Bulma:
 
 ```php

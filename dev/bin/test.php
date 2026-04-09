@@ -9,6 +9,7 @@ $tests = [
     dirname(__DIR__) . '/tests/IdentityServiceTest.php',
     dirname(__DIR__) . '/tests/ModelsUpdateTest.php',
     dirname(__DIR__) . '/tests/MaintenanceModeTest.php',
+    dirname(__DIR__) . '/tests/ModelCacheTest.php',
     dirname(__DIR__) . '/tests/RouterDynamicDispatchTest.php',
     dirname(__DIR__) . '/tests/StrTest.php',
     dirname(__DIR__) . '/tests/UserServiceTest.php',

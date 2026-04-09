@@ -1,0 +1,32 @@
+{
+    "driver": "mysql",
+    "schema": "public",
+    "table": "language_translations",
+    "generated_at": 1775740519,
+    "columns": [
+        {
+            "name": "id",
+            "type": "int unsigned"
+        },
+        {
+            "name": "language_id",
+            "type": "int unsigned"
+        },
+        {
+            "name": "translation_key",
+            "type": "varchar(191)"
+        },
+        {
+            "name": "translation_value",
+            "type": "longtext"
+        },
+        {
+            "name": "created_at",
+            "type": "bigint unsigned"
+        },
+        {
+            "name": "updated_at",
+            "type": "bigint unsigned"
+        }
+    ]
+}

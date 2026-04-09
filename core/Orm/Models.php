@@ -18,6 +18,12 @@ class Models
     protected static ?PDO $db = null;
     protected static string $driver = 'sqlite';
     protected static string $schema = 'public';
+    protected static array $modelCacheConfig = [
+        'enabled' => false,
+        'refresh' => false,
+        'path' => '',
+        'namespace' => 'default',
+    ];
     protected array $originalAttributes = [];
     protected array $queryWheres = [];
     protected array $queryOrders = [];
@@ -58,6 +64,22 @@ class Models
     }
 
     /**
+     * Model metadata cache davranisini ayarlar.
+     *
+     * @param array<string, mixed> $config Cache ayarlari.
+     * @return void
+     */
+    public static function setModelCacheConfig(array $config): void
+    {
+        self::$modelCacheConfig = [
+            'enabled' => (bool) ($config['enabled'] ?? false),
+            'refresh' => (bool) ($config['refresh'] ?? false),
+            'path' => (string) ($config['path'] ?? ''),
+            'namespace' => (string) ($config['namespace'] ?? 'default'),
+        ];
+    }
+
+    /**
      * Ortak PDO baglantisini dondurur.
      *
      * @return PDO Aktif PDO baglantisi.
@@ -80,7 +102,7 @@ class Models
     public static function get(string $name): object
     {
         $table = self::sanitizeIdentifier($name);
-        $columns = self::describeTable($table);
+        $columns = self::columnsForModel($table);
         $model = new GenericModel();
 
         foreach ($columns as $column) {
@@ -92,6 +114,26 @@ class Models
         $model->syncOriginalAttributes();
 
         return $model;
+    }
+
+    /**
+     * Model olusturmak icin tablo sutunlarini cache veya veritabanindan cozer.
+     *
+     * @param string $table Tablo adi.
+     * @return array<int, array{name: string, type: string}>
+     */
+    protected static function columnsForModel(string $table): array
+    {
+        $cached = self::loadColumnsFromCache($table);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $columns = self::describeTable($table);
+        self::writeColumnsToCache($table, $columns);
+
+        return $columns;
     }
 
     /**
@@ -985,6 +1027,123 @@ class Models
             'pgsql' => self::describePgsqlTable($table),
             default => throw new RuntimeException(sprintf('Unsupported database driver for model generation: %s', $driver)),
         };
+    }
+
+    /**
+     * Cache ayari uygunsa tablo sutunlarini dosyadan okumaya calisir.
+     *
+     * @param string $table Tablo adi.
+     * @return array<int, array{name: string, type: string}>|null
+     */
+    protected static function loadColumnsFromCache(string $table): ?array
+    {
+        if (! self::isModelCacheEnabled() || self::shouldRefreshModelCache()) {
+            return null;
+        }
+
+        $file = self::modelCacheFile($table);
+
+        if ($file === '' || ! is_file($file)) {
+            return null;
+        }
+
+        $payload = json_decode((string) file_get_contents($file), true);
+
+        if (! is_array($payload) || ! isset($payload['columns']) || ! is_array($payload['columns'])) {
+            return null;
+        }
+
+        $columns = [];
+
+        foreach ($payload['columns'] as $column) {
+            if (! is_array($column) || ! isset($column['name'])) {
+                continue;
+            }
+
+            $columns[] = [
+                'name' => (string) $column['name'],
+                'type' => (string) ($column['type'] ?? 'text'),
+            ];
+        }
+
+        return $columns === [] ? null : $columns;
+    }
+
+    /**
+     * Cache ayari uygunsa tablo sutunlarini dosyaya yazar.
+     *
+     * @param string $table Tablo adi.
+     * @param array<int, array{name: string, type: string}> $columns Sutun listesi.
+     * @return void
+     */
+    protected static function writeColumnsToCache(string $table, array $columns): void
+    {
+        if (! self::isModelCacheEnabled()) {
+            return;
+        }
+
+        $file = self::modelCacheFile($table);
+
+        if ($file === '') {
+            return;
+        }
+
+        $directory = dirname($file);
+
+        if (! is_dir($directory) && ! @mkdir($directory, 0777, true) && ! is_dir($directory)) {
+            return;
+        }
+
+        $payload = [
+            'driver' => self::$driver,
+            'schema' => self::$schema,
+            'table' => $table,
+            'generated_at' => time(),
+            'columns' => array_values($columns),
+        ];
+
+        @file_put_contents($file, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * Model metadata cache mekanizmasinin aktif olup olmadigini belirtir.
+     *
+     * @return bool
+     */
+    protected static function isModelCacheEnabled(): bool
+    {
+        return (bool) (self::$modelCacheConfig['enabled'] ?? false)
+            && (string) (self::$modelCacheConfig['path'] ?? '') !== '';
+    }
+
+    /**
+     * Bu istekte cache yeniden uretilmeli mi bilgisini dondurur.
+     *
+     * @return bool
+     */
+    protected static function shouldRefreshModelCache(): bool
+    {
+        return (bool) (self::$modelCacheConfig['refresh'] ?? false);
+    }
+
+    /**
+     * Verilen tablo icin metadata cache dosya yolunu uretir.
+     *
+     * @param string $table Tablo adi.
+     * @return string
+     */
+    protected static function modelCacheFile(string $table): string
+    {
+        $path = rtrim((string) (self::$modelCacheConfig['path'] ?? ''), '/');
+
+        if ($path === '') {
+            return '';
+        }
+
+        $namespace = preg_replace('/[^a-zA-Z0-9_\-]+/', '-', (string) (self::$modelCacheConfig['namespace'] ?? 'default'));
+        $fileName = strtolower(self::$driver . '-' . self::$schema . '-' . $table . '.json');
+
+        return $path . '/' . trim((string) $namespace, '-') . '/' . $fileName;
     }
 
     /**
